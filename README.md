@@ -1,19 +1,69 @@
-#  Blockchain Client
-This repository contains a simple Python-based blockchain client for the Blockchain network. It provides an easy-to-use command-line interface to interact with the Blockchain network using JSON-RPC API.
+#  Blockchain Go Client
+
+This repository contains a simple Go-based blockchain client for the Polygon network. It provides an easy-to-use command-line interface to interact with the Polygon network using JSON-RPC API.
 
 
 
 ## Overview 
 
-The python source code is located in the `/app` folder. Also setup the logs for each response. The `Dockerfile` mainly used to setup image.
-The code then moves to the terraform configuration where you will need to deploy the infrastructure and alongside by setting up the `container_definition.json`, you can simply deploy this application
-on ECS Fargate. 
+The Go source code is located in the root folder of the repository. The `Dockerfile` is used to create a Docker image of the application. The Terraform configuration in the `/terraform` folder can be used to deploy the application to AWS ECS Fargate.
 
 ## Requirements
-Python 3.9 or later
+
+Go 1.16 or later (1.20.2)
 Docker
 Terraform
 An AWS account
+
+## Usage
+
+1. Clone the repository:
+``` 
+git clone https://github.com/moeidsaleem/tw-blockchain-client-go.git
+cd tw-blockchain-client-go
+```
+
+2. Run the Go code:
+```
+go run main.go
+```
+This will print the current block number and the block with number 0x134e82a to the console.
+
+
+## Quickstart
+
+Bash scripts are available for setting up things quickly. 
+- Run the code
+```
+sh run.sh
+```
+
+- Build an exectuable `client` 
+```
+sh build.sh
+```
+- Build image 
+```
+sh build_image.sh
+```
+
+
+3. Build the Docker image:
+```
+docker build -t blockchain_client .
+```
+This will build a Docker image of the application with the specified name.
+
+
+4. Run the Docker container:
+
+```
+docker run --rm -it <image-name>
+```
+This will run a Docker container of the application.
+
+
+
 
 ## Installation
 1. Clone the repository:
@@ -61,7 +111,8 @@ sh deploy.sh
 ```
 
 
-### Manual setup
+### Deployment to AWS ECS Fargate using Terraform
+To deploy the application to AWS ECS Fargate, follow these steps:
 
 1. Navigate to the terraform directory:
 `cd terraform`
@@ -84,59 +135,6 @@ terraform apply
 ```
 
 This will create the necessary AWS resources and deploy the application to AWS ECS Fargate.
-
-
-## Main task reference for terraform
-
-The terraform configuration will deploy all the necessary AWS infrastructure to run the project efficiently. The code is kept lightweight and can be easily modularized using **/modules**. The Terraform folder includes essential files such as `main.tf`, `providers.tf`, `security.tf`, `variables.tf`, and `vpc.tf`, along with other helpful resources such as `.tfvars.example`, `deploy.sh`, and `container_definition.json`. For quick reference on container setup, please check `main.tf lines 75-88`.
-
-
-Here is the main code snippet 
-``` h
-# AWS ECS task definition resource for the blockchain client service. (* main task definition *)
-resource "aws_ecs_task_definition" "blockchain_client_task" {
-  family                   = "blockchain-client-task"
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn            = aws_iam_role.ecs_task_role.arn
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = 256
-  memory                   = 512
-
-  container_definitions = jsonencode(
-    jsondecode(file("${path.module}/container_definition.json"))
-  )
-}
-```
-
-The container definition file is kept seperate for automation, The file is as followed:
-``` JSON
-[
-    {
-      "name": "blockchain-client",
-      "image": "${var.docker_image_repo}:latest",
-      "essential": true,
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-region": "${var.aws_region}",
-          "awslogs-group": "blockchain-client",
-          "awslogs-stream-prefix": "blockchain-client"
-        }
-      }
-    }
-  ]
-  ```
-
-
-## Production-Readiness Considerations
-To make this application production-ready, consider the following:
-
-- Add proper logging and monitoring to gain insights into the application's performance and to detect issues early.
-- Implement retry mechanisms and error handling to ensure the application is resilient to network failures or other errors.
-- Use a proper configuration management system to manage environment-specific settings and credentials securely.
-- Ensure the security of the application, including securing sensitive data and applying best practices for network and infrastructure security.
-- Scale the infrastructure as needed to handle increased workloads and maintain performance.
 
 
 
