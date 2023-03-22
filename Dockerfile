@@ -1,15 +1,12 @@
-FROM python:3.9-slim
-
-
-
-ARG AWS_REGION
-ENV AWS_REGION $AWS_REGION
+FROM golang:1.16 AS build
 
 WORKDIR /app
 
-COPY ./app/requirements.txt /app
-RUN pip install -r requirements.txt
+COPY . .
+RUN go build -o app
 
-COPY ./app /app
+FROM alpine:3.14
+WORKDIR /app
 
-CMD ["python", "main.py"]
+COPY --from=build /app/app .
+CMD ["./app"]
